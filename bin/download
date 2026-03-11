@@ -10,11 +10,21 @@ plugin_dir=$(dirname "$(dirname "$current_script_path")")
 # shellcheck source=../lib/utils.bash
 source "${plugin_dir}/lib/utils.bash"
 
+version="$ASDF_INSTALL_VERSION"
+
+# Resolve "latest" if asdf didn't call latest-stable first.
+if [[ "$version" == "latest" ]]; then
+  version="$(list_all_versions | sort_versions | tail -n1 | xargs echo)"
+  if [[ -z "$version" ]]; then
+    fail "Could not determine latest version"
+  fi
+fi
+
 mkdir -p "$ASDF_DOWNLOAD_PATH"
 
-release_file="$ASDF_DOWNLOAD_PATH/$TOOL_NAME-$ASDF_INSTALL_VERSION.tar.gz"
+release_file="$ASDF_DOWNLOAD_PATH/$TOOL_NAME-$version.tar.gz"
 
-download_release "$ASDF_INSTALL_VERSION" "$release_file"
+download_release "$version" "$release_file"
 
 tar -xzf "$release_file" -C "$ASDF_DOWNLOAD_PATH" || fail "Could not extract $release_file"
 
